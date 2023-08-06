@@ -1,0 +1,3 @@
+# Juicy
+
+JUCE framework playground
