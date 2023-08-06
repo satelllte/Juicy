@@ -6,7 +6,7 @@ JUCE framework playground
 
 ### Prerequisites
 
-(1) [JUCE](https://github.com/juce-framework/JUCE/)
+**(1) [JUCE](https://github.com/juce-framework/JUCE/)**
 
 Update JUCE git submodule dependency to latest:
 
@@ -14,7 +14,7 @@ Update JUCE git submodule dependency to latest:
 git submodule update --init --recursive
 ```
 
-(2) [CMake](https://cmake.org/download/)
+**(2) [CMake](https://cmake.org/download/)**
 
 Download and install CMake.
 
