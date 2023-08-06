@@ -29,3 +29,13 @@ To make sure it's installed run:
 ```sh
 cmake --version
 ```
+
+### Build
+
+On Mac:
+
+```sh
+mkdir build
+cd build
+cmake .. -GXcode
+```
