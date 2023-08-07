@@ -76,11 +76,10 @@ juce_add_plugin("${PROJECT_NAME}"
 target_compile_features("${PROJECT_NAME}" PRIVATE cxx_std_20)
 
 # Manually list all .h and .cpp files for the plugin
-set(SourceFiles
-    Source/PluginEditor.h
-	Source/PluginProcessor.h
-	Source/PluginEditor.cpp
-	Source/PluginProcessor.cpp)
+file(GLOB_RECURSE SourceFiles CONFIGURE_DEPENDS 
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp" 
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/*.h"
+)
 target_sources("${PROJECT_NAME}" PRIVATE ${SourceFiles})
 
 # We don't want our source buried in extra nested folders.
