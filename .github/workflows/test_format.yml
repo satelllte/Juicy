@@ -17,6 +17,6 @@ jobs:
       - name: Install Clang-Format
         run: |
           sudo apt update
-          sudo apt install -y clang-format
+          sudo apt install -y clang-format-16
       - name: Test formatting
         run: ./test_format.sh
