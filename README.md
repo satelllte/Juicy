@@ -1,6 +1,6 @@
 # Juicy
 
-JUCE framework playground
+A playground for audio plugin development with [JUCE framework](https://juce.com/).
 
 ## Development
 
@@ -30,12 +30,47 @@ To make sure it's installed run:
 cmake --version
 ```
 
-### Build
+**(3) JUCE [AudioPluginHost](https://github.com/juce-framework/JUCE/tree/master/extras/AudioPluginHost)**
 
-On Mac:
+AudioPluginHost is a JUCE application that can be used to test plugins.
+It's located in `JUCE/extras/AudioPluginHost` directory, but you have to build it.
+
+To do this on MacOS, open it in Xcode:
+
+```sh
+open JUCE/extras/AudioPluginHost/Builds/MacOSX/AudioPluginHost.xcodeproj
+```
+
+Then build it in Xcode.
+
+To make sure it's built (MacOS), you can run:
+
+```sh
+test -d JUCE/extras/AudioPluginHost/Builds/MacOSX/build/Debug/AudioPluginHost.app && echo "+"
+```
+
+### Build & Run
+
+After you've done all the steps above, you can build and run the project.
+
+**(1) Create project for your IDE**
+
+On Mac with Xcode:
 
 ```sh
 mkdir build
 cd build
-cmake .. -GXcode
+cmake .. -G Xcode
 ```
+
+**(2) Open project**
+
+On Mac with Xcode:
+
+```sh
+open build/ProjectName.xcodeproj
+```
+
+Now you can select the target and build it. 
+
+By default, it's going to run in `AudioPluginHost.app`, but if you want to test the plugin in some other application, e.g. in Ableton, you can go to "Product -> Scheme -> Edit Scheme" and choose another executable. But remember that it'll reset if you re-run the CMake build.
