@@ -42,7 +42,6 @@ ForEachMacros: ['forEachXmlChildElement']
 IndentCaseLabels: true
 IndentWidth: 4
 IndentWrappedFunctionNames: true
-InsertNewlineAtEOF: true
 KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: Inner
