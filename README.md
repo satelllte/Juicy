@@ -6,7 +6,7 @@ A playground for audio plugin development with [JUCE framework](https://juce.com
 
 ### Prerequisites
 
-**(1) [JUCE](https://github.com/juce-framework/JUCE/)**
+#### (1) [JUCE](https://github.com/juce-framework/JUCE/)
 
 Update JUCE git submodule dependency to latest:
 
@@ -14,7 +14,7 @@ Update JUCE git submodule dependency to latest:
 git submodule update --init --recursive
 ```
 
-**(2) [CMake](https://cmake.org/download/)**
+#### (2) [CMake](https://cmake.org/download/)
 
 Download and install CMake.
 
@@ -30,7 +30,7 @@ To make sure it's installed run:
 cmake --version
 ```
 
-**(3) [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html)**
+#### (3) [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html)
 
 ClangFormat is used to make sure the project has consistent code formatting.
 
@@ -46,7 +46,7 @@ To make sure it's installed run:
 clang-format --version
 ```
 
-**(4) JUCE [AudioPluginHost](https://github.com/juce-framework/JUCE/tree/master/extras/AudioPluginHost)**
+#### (4) JUCE [AudioPluginHost](https://github.com/juce-framework/JUCE/tree/master/extras/AudioPluginHost)
 
 AudioPluginHost is a JUCE application that can be used to test plugins.
 It's located in `JUCE/extras/AudioPluginHost` directory, but you have to build it.
@@ -69,7 +69,7 @@ test -d JUCE/extras/AudioPluginHost/Builds/MacOSX/build/Debug/AudioPluginHost.ap
 
 After you've done all the steps above, you can build and run the project.
 
-**(1) Create project for your IDE**
+#### (1) Create project for your IDE
 
 On Mac with Xcode:
 
@@ -79,7 +79,7 @@ cd build
 cmake .. -G Xcode
 ```
 
-**(2) Open project**
+#### (2) Open project
 
 On Mac with Xcode:
 
@@ -93,7 +93,7 @@ By default, it's going to run in `AudioPluginHost.app`, but if you want to test 
 
 ### Testing
 
-**(1) Code formatting**
+#### (1) Code formatting
 
 To check code formatting, run:
 
