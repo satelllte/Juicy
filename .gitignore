@@ -14,6 +14,7 @@ _deps
 
 # Build files
 /build
+/.cache
 
 # IDE settings
 /.vscode
