@@ -109,7 +109,6 @@ foreach (target ${FORMATS} "All")
             XCODE_GENERATE_SCHEME ON)
     endif ()
 endforeach ()
-# set_target_properties(Assets PROPERTIES FOLDER "Targets")
 
 target_compile_definitions("${PROJECT_NAME}"
     PUBLIC
@@ -120,7 +119,6 @@ target_compile_definitions("${PROJECT_NAME}"
 
 target_link_libraries("${PROJECT_NAME}"
     PRIVATE
-    # Assets
     juce::juce_audio_utils
     juce::juce_audio_processors
     PUBLIC
