@@ -9,14 +9,20 @@ on:
       - main
 
 jobs:
-  test_format:
+  test_lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Install Clang-Tidy
+      - name: Install CMake & Clang-Tidy
         run: |
           sudo apt update
+          sudo apt install -y cmake
           sudo apt install -y clang-tidy
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake .. -G "Unix Makefiles"
       - name: Test lint
         run: ./test_lint.sh
