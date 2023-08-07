@@ -30,7 +30,23 @@ To make sure it's installed run:
 cmake --version
 ```
 
-**(3) JUCE [AudioPluginHost](https://github.com/juce-framework/JUCE/tree/master/extras/AudioPluginHost)**
+**(3) [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html)**
+
+ClangFormat is used to make sure the project has consistent code formatting.
+
+To install it on MacOS, you can use:
+
+```sh
+brew install clang-format
+```
+
+To make sure it's installed run:
+
+```sh
+clang-format --version
+```
+
+**(4) JUCE [AudioPluginHost](https://github.com/juce-framework/JUCE/tree/master/extras/AudioPluginHost)**
 
 AudioPluginHost is a JUCE application that can be used to test plugins.
 It's located in `JUCE/extras/AudioPluginHost` directory, but you have to build it.
@@ -74,3 +90,13 @@ open build/ProjectName.xcodeproj
 Now you can select the target and build it. 
 
 By default, it's going to run in `AudioPluginHost.app`, but if you want to test the plugin in some other application, e.g. in Ableton, you can go to "Product -> Scheme -> Edit Scheme" and choose another executable. But remember that it'll reset if you re-run the CMake build.
+
+### Testing
+
+**(1) Code formatting**
+
+To check code formatting, run:
+
+```sh
+./test_format.sh
+```
