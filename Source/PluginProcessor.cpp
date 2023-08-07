@@ -101,7 +101,7 @@ bool PluginProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
 #if JucePlugin_IsMidiEffect
     juce::ignoreUnused (layouts);
-    return true; 
+    return true;
 #else
     // This is the place where you check if the layout is supported.
     // In this template code we only support mono or stereo.
