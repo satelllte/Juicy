@@ -11,7 +11,7 @@ public:
     ~PluginEditor() override;
 
     //==============================================================================
-    void paint (juce::Graphics&) override;
+    void paint (juce::Graphics& graphics) override;
     void resized() override;
 
 private:

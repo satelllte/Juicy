@@ -11,7 +11,9 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    const int width = 400;
+    const int height = 300;
+    setSize (width, height);
 }
 
 PluginEditor::~PluginEditor()

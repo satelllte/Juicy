@@ -1,0 +1,22 @@
+name: Test lint
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  test_format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install Clang-Tidy
+        run: |
+          sudo apt update
+          sudo apt install -y clang-tidy
+      - name: Test lint
+        run: ./test_lint.sh
