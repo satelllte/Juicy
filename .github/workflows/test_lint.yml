@@ -14,12 +14,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - name: Install CMake & Clang-Tidy
         run: |
           sudo apt update
           sudo apt install -y cmake
           sudo apt install -y clang-tidy
-      - name: Build
+      - name: CMake version
+        run: cmake --version
+      - name: CMake build
         run: |
           mkdir build
           cd build
