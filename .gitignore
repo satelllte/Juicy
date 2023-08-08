@@ -12,8 +12,9 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
-# Build files
+# Build artifacts
 /build
+/.cache
 
 # IDE settings
 /.vscode
