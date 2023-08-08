@@ -1,4 +1,4 @@
-name: Test formatting
+name: Test (format)
 
 on:
   pull_request:
@@ -14,9 +14,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Install Clang-Format
-        run: |
-          sudo apt update
-          sudo apt install -y clang-format
-      - name: Test formatting
-        run: ./test_format.sh
+      - uses: cpp-linter/cpp-linter-action@v2
+        id: linter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          style: file
+          version: 16
+          tidy-checks: '-*' # Disable "clang-tidy" checks entirely for this workflow because we're checking only code formatting here.
+      - name: Fail on errors
+        if: steps.linter.outputs.checks-failed > 0
+        run: exit 1
