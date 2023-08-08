@@ -37,6 +37,7 @@ jobs:
         with:
           style: file
           tidy-checks: ''
+          database: 'build'
 
       - name: Fail fast?!
         if: steps.linter.outputs.checks-failed > 0
