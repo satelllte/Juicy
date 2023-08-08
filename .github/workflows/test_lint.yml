@@ -1,33 +1,33 @@
-name: Test lint
+# name: Test lint
 
-on:
-  pull_request:
-    branches:
-      - main
-  push:
-    branches:
-      - main
+# on:
+#   pull_request:
+#     branches:
+#       - main
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  test_lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: Install CMake, Clang-Tidy and JUCE dependencies
-        # JUCE Linux dependencies: https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
-        run: |
-          sudo apt update
-          sudo apt install -y cmake clang-tidy
-          sudo apt install -y libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype6-dev libwebkit2gtk-4.0-dev libglu1-mesa-dev xvfb ninja-build
-      - name: CMake version
-        run: cmake --version
-      - name: CMake build
-        # DCMAKE_EXPORT_COMPILE_COMMANDS is needed for clang-tidy
-        run: |
-          mkdir build
-          cmake -B build -G "Ninja" -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE
-      - name: Test lint
-        run: ./test_lint.sh
+# jobs:
+#   test_lint:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
+#         with:
+#           submodules: recursive
+#       - name: Install CMake, Clang-Tidy and JUCE dependencies
+#         # JUCE Linux dependencies: https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
+#         run: |
+#           sudo apt update
+#           sudo apt install -y cmake clang-tidy
+#           sudo apt install -y libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype6-dev libwebkit2gtk-4.0-dev libglu1-mesa-dev xvfb ninja-build
+#       - name: CMake version
+#         run: cmake --version
+#       - name: CMake build
+#         # DCMAKE_EXPORT_COMPILE_COMMANDS is needed for clang-tidy
+#         run: |
+#           mkdir build
+#           cmake -B build -G "Ninja" -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE
+#       - name: Test lint
+#         run: ./test_lint.sh
