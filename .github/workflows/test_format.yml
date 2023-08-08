@@ -23,6 +23,7 @@ jobs:
           style: file
           version: 16
           files-changed-only: false
+          thread-comments: true
           tidy-checks: '-*' # Disable "clang-tidy" checks entirely for this workflow because we're checking only code formatting here.
       - name: Fail on errors
         if: steps.linter.outputs.checks-failed > 0
