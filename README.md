@@ -8,10 +8,27 @@ A playground for audio plugin development with [JUCE framework](https://juce.com
 
 #### (1) [JUCE](https://github.com/juce-framework/JUCE/)
 
-Update JUCE git submodule dependency to latest:
+JUCE source code is included as a git submodule and located inside `./JUCE` directory.
+
+To populate it after first repository clone, run:
 
 ```sh
 git submodule update --init --recursive
+```
+
+To update JUCE source files to latest version, run:
+
+```sh
+pushd ./JUCE
+git pull
+popd
+```
+
+then commit the changes (if there are any):
+
+```sh
+git add ./JUCE
+git commit -m "Update JUCE to latest"
 ```
 
 #### (2) [CMake](https://cmake.org/download/)
