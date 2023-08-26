@@ -10,7 +10,13 @@ A playground for audio plugin development with [JUCE framework](https://juce.com
 
 JUCE source code is included as a git submodule and located inside `./JUCE` directory.
 
-To update JUCE git submodule to latest version, run:
+To populate it after first repository clone, run:
+
+```sh
+git submodule update --init --recursive
+```
+
+To update JUCE source files to latest version, run:
 
 ```sh
 pushd ./JUCE
