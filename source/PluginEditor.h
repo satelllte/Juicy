@@ -18,7 +18,7 @@ private:
     // access the processor object that created it.
     PluginProcessor& _pluginProcessor;
 
-    juce::Slider gainSlider;
+    juce::Slider _gainSlider;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
 };

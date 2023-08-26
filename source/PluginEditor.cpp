@@ -12,13 +12,13 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     setSize (400, 300);
 
     // Set up Tape Stop slider
-    addAndMakeVisible (gainSlider);
-    gainSlider.setSliderStyle (juce::Slider::LinearHorizontal);
-    gainSlider.setRange (0.0, 1.0); // Adjust the range as needed
-    gainSlider.setValue (0.0);
-    gainSlider.onValueChange = [this]
+    addAndMakeVisible (_gainSlider);
+    _gainSlider.setSliderStyle (juce::Slider::LinearHorizontal);
+    _gainSlider.setRange (0.0, 1.0); // Adjust the range as needed
+    _gainSlider.setValue (0.0);
+    _gainSlider.onValueChange = [this]
     {
-        _pluginProcessor.setGain ((float) gainSlider.getValue());
+        _pluginProcessor.setGain ((float) _gainSlider.getValue());
     };
 }
 
@@ -40,5 +40,5 @@ void PluginEditor::paint (juce::Graphics& g)
 void PluginEditor::resized()
 {
     // lay out the positions of your components
-    gainSlider.setBounds (10, 10, getWidth() - 20, 20);
+    _gainSlider.setBounds (10, 10, getWidth() - 20, 20);
 }
