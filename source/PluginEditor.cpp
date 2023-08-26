@@ -3,9 +3,9 @@
 
 //==============================================================================
 PluginEditor::PluginEditor (PluginProcessor& p)
-    : AudioProcessorEditor (&p), processorRef (p)
+    : AudioProcessorEditor (&p), _pluginProcessor (p)
 {
-    juce::ignoreUnused (processorRef);
+    juce::ignoreUnused (_pluginProcessor);
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -18,7 +18,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     gainSlider.setValue (0.0);
     gainSlider.onValueChange = [this]
     {
-        processorRef.setGain ((float) gainSlider.getValue());
+        _pluginProcessor.setGain ((float) gainSlider.getValue());
     };
 }
 
