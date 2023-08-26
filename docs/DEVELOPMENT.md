@@ -109,5 +109,5 @@ This will create `./build` directory files by CMake:
 To check source code formatting with ClangFormat, run:
 
 ```sh
-./test_format.sh
+./scripts/test_format.sh
 ```
