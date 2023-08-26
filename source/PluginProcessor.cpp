@@ -150,7 +150,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
         for (int sample = 0; sample < bufferNumSamples; ++sample)
         {
-            channelData[sample] *= gain;
+            channelData[sample] *= _gain;
         }
     }
 }
@@ -191,5 +191,5 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 void PluginProcessor::setGain (const float value)
 {
-    gain = value;
+    _gain = value;
 }

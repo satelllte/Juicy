@@ -41,6 +41,7 @@ public:
     void setGain (const float value);
 
 private:
-    float gain = 0.0f;
+    float _gain = 0.0f;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };
