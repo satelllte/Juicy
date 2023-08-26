@@ -77,17 +77,17 @@ target_compile_features("${PROJECT_NAME}" PRIVATE cxx_std_20)
 
 # Manually list all .h and .cpp files for the plugin
 set(SourceFiles
-    Source/PluginEditor.h
-	Source/PluginProcessor.h
-	Source/PluginEditor.cpp
-	Source/PluginProcessor.cpp)
+    source/PluginEditor.h
+	source/PluginProcessor.h
+	source/PluginEditor.cpp
+	source/PluginProcessor.cpp)
 target_sources("${PROJECT_NAME}" PRIVATE ${SourceFiles})
 
 # We don't want our source buried in extra nested folders.
 set_target_properties("${PROJECT_NAME}" PROPERTIES FOLDER "")
 
 # Fix Xcode source tree look.
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/Source PREFIX "" FILES ${SourceFiles})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/source PREFIX "" FILES ${SourceFiles})
 
 # Clean up folder organization on Xcode.
 # It tucks the Plugin varieties into a "Targets" folder and generate an Xcode Scheme manually
