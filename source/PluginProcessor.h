@@ -71,6 +71,11 @@ private:
     void updatePeakFilter (const double sampleRate, const float peakFrequency, const float peakQuality, const float peakGainInDecibels);
     void updateLowCutFilter (const double sampleRate, const float frequency, const Slope slope);
     void updateHighCutFilter (const double sampleRate, const float frequency, const Slope slope);
+    void updateCutFilter (
+        const juce::ReferenceCountedArray<juce::dsp::FilterDesign<float>::IIRCoefficients> coefficients,
+        CutFilter* leftCutFilter,
+        CutFilter* rightCutFilter,
+        const Slope slope);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };
