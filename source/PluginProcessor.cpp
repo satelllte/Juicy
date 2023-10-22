@@ -206,53 +206,53 @@ void PluginProcessor::updatePeakFilter (const double sampleRate, const float pea
     *rightChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
 }
 
-void PluginProcessor::updateLowCutFilter (const double sampleRate, const float lowCutFrequency, const Slope lowCutSlope)
+void PluginProcessor::updateLowCutFilter (const double sampleRate, const float frequency, const Slope slope)
 {
-    auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod (lowCutFrequency, sampleRate, 2 * (lowCutSlope + 1));
-    auto leftLowCut = &leftChain.get<ChainPositions::LowCutFilter>();
-    auto rightLowCut = &rightChain.get<ChainPositions::LowCutFilter>();
+    auto coefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod (frequency, sampleRate, 2 * (slope + 1));
+    auto leftCutFilter = &leftChain.get<ChainPositions::LowCutFilter>();
+    auto rightCutFilter = &rightChain.get<ChainPositions::LowCutFilter>();
 
-    leftLowCut->setBypassed<Slope::Slope_12> (true);
-    leftLowCut->setBypassed<Slope::Slope_24> (true);
-    leftLowCut->setBypassed<Slope::Slope_36> (true);
-    leftLowCut->setBypassed<Slope::Slope_48> (true);
+    leftCutFilter->setBypassed<Slope::Slope_12> (true);
+    leftCutFilter->setBypassed<Slope::Slope_24> (true);
+    leftCutFilter->setBypassed<Slope::Slope_36> (true);
+    leftCutFilter->setBypassed<Slope::Slope_48> (true);
 
-    rightLowCut->setBypassed<Slope::Slope_12> (true);
-    rightLowCut->setBypassed<Slope::Slope_24> (true);
-    rightLowCut->setBypassed<Slope::Slope_36> (true);
-    rightLowCut->setBypassed<Slope::Slope_48> (true);
+    rightCutFilter->setBypassed<Slope::Slope_12> (true);
+    rightCutFilter->setBypassed<Slope::Slope_24> (true);
+    rightCutFilter->setBypassed<Slope::Slope_36> (true);
+    rightCutFilter->setBypassed<Slope::Slope_48> (true);
 
     // Gradually enabling filters based on the slope ...
     // 12 db/Oct
-    *leftLowCut->get<Slope::Slope_12>().coefficients = *lowCutCoefficients[Slope::Slope_12];
-    *rightLowCut->get<Slope::Slope_12>().coefficients = *lowCutCoefficients[Slope::Slope_12];
-    leftLowCut->setBypassed<Slope::Slope_12> (false);
-    rightLowCut->setBypassed<Slope::Slope_12> (false);
-    if (lowCutSlope == Slope::Slope_12)
+    *leftCutFilter->get<Slope::Slope_12>().coefficients = *coefficients[Slope::Slope_12];
+    *rightCutFilter->get<Slope::Slope_12>().coefficients = *coefficients[Slope::Slope_12];
+    leftCutFilter->setBypassed<Slope::Slope_12> (false);
+    rightCutFilter->setBypassed<Slope::Slope_12> (false);
+    if (slope == Slope::Slope_12)
         return;
 
     // 24 db/Oct
-    *leftLowCut->get<Slope::Slope_24>().coefficients = *lowCutCoefficients[Slope::Slope_24];
-    *rightLowCut->get<Slope::Slope_24>().coefficients = *lowCutCoefficients[Slope::Slope_24];
-    leftLowCut->setBypassed<Slope::Slope_24> (false);
-    rightLowCut->setBypassed<Slope::Slope_24> (false);
-    if (lowCutSlope == Slope::Slope_24)
+    *leftCutFilter->get<Slope::Slope_24>().coefficients = *coefficients[Slope::Slope_24];
+    *rightCutFilter->get<Slope::Slope_24>().coefficients = *coefficients[Slope::Slope_24];
+    leftCutFilter->setBypassed<Slope::Slope_24> (false);
+    rightCutFilter->setBypassed<Slope::Slope_24> (false);
+    if (slope == Slope::Slope_24)
         return;
 
     // 36 db/Oct
-    *leftLowCut->get<Slope::Slope_36>().coefficients = *lowCutCoefficients[Slope::Slope_36];
-    *rightLowCut->get<Slope::Slope_36>().coefficients = *lowCutCoefficients[Slope::Slope_36];
-    leftLowCut->setBypassed<Slope::Slope_36> (false);
-    rightLowCut->setBypassed<Slope::Slope_36> (false);
-    if (lowCutSlope == Slope::Slope_36)
+    *leftCutFilter->get<Slope::Slope_36>().coefficients = *coefficients[Slope::Slope_36];
+    *rightCutFilter->get<Slope::Slope_36>().coefficients = *coefficients[Slope::Slope_36];
+    leftCutFilter->setBypassed<Slope::Slope_36> (false);
+    rightCutFilter->setBypassed<Slope::Slope_36> (false);
+    if (slope == Slope::Slope_36)
         return;
 
     // 48 db/Oct
-    *leftLowCut->get<Slope::Slope_48>().coefficients = *lowCutCoefficients[Slope::Slope_48];
-    *rightLowCut->get<Slope::Slope_48>().coefficients = *lowCutCoefficients[Slope::Slope_48];
-    leftLowCut->setBypassed<Slope::Slope_48> (false);
-    rightLowCut->setBypassed<Slope::Slope_48> (false);
-    if (lowCutSlope == Slope::Slope_48)
+    *leftCutFilter->get<Slope::Slope_48>().coefficients = *coefficients[Slope::Slope_48];
+    *rightCutFilter->get<Slope::Slope_48>().coefficients = *coefficients[Slope::Slope_48];
+    leftCutFilter->setBypassed<Slope::Slope_48> (false);
+    rightCutFilter->setBypassed<Slope::Slope_48> (false);
+    if (slope == Slope::Slope_48)
         return;
 
     // Should never reach this point
