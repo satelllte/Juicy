@@ -195,14 +195,20 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
 void PluginProcessor::updateFilters (const double sampleRate)
 {
     auto chainSettings = getChainSettings (apvts);
+    updatePeakFilter (sampleRate, chainSettings.peakFrequency, chainSettings.peakQuality, chainSettings.peakGainInDecibels);
+    updateLowCutFilter (sampleRate, chainSettings.lowCutFrequency, chainSettings.lowCutSlope);
+}
 
-    // Peak filter
-    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter (sampleRate, chainSettings.peakFrequency, chainSettings.peakQuality, juce::Decibels::decibelsToGain (chainSettings.peakGainInDecibels));
+void PluginProcessor::updatePeakFilter (const double sampleRate, const float peakFrequency, const float peakQuality, const float peakGainInDecibels)
+{
+    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter (sampleRate, peakFrequency, peakQuality, juce::Decibels::decibelsToGain (peakGainInDecibels));
     *leftChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
     *rightChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
+}
 
-    // Low-cut (high-pass) filter
-    auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod (chainSettings.lowCutFrequency, sampleRate, 2 * (chainSettings.lowCutSlope + 1));
+void PluginProcessor::updateLowCutFilter (const double sampleRate, const float lowCutFrequency, const Slope lowCutSlope)
+{
+    auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod (lowCutFrequency, sampleRate, 2 * (lowCutSlope + 1));
     auto leftLowCut = &leftChain.get<ChainPositions::LowCutFilter>();
     auto rightLowCut = &rightChain.get<ChainPositions::LowCutFilter>();
     leftLowCut->setBypassed<Slope::Slope_12> (true);
@@ -214,7 +220,7 @@ void PluginProcessor::updateFilters (const double sampleRate)
     rightLowCut->setBypassed<Slope::Slope_36> (true);
     rightLowCut->setBypassed<Slope::Slope_48> (true);
 
-    switch (chainSettings.lowCutSlope)
+    switch (lowCutSlope)
     {
         case Slope::Slope_12:
             *leftLowCut->get<Slope::Slope_12>().coefficients = *lowCutCoefficients[Slope::Slope_12];

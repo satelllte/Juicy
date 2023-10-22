@@ -7,6 +7,14 @@
 #include "ipps.h"
 #endif
 
+enum Slope
+{
+    Slope_12,
+    Slope_24,
+    Slope_36,
+    Slope_48,
+};
+
 struct ChainSettings; // forward declaration
 ChainSettings getChainSettings (const juce::AudioProcessorValueTreeState& apvts);
 
@@ -60,16 +68,10 @@ private:
     };
 
     void updateFilters (const double sampleRate);
+    void updatePeakFilter (const double sampleRate, const float peakFrequency, const float peakQuality, const float peakGainInDecibels);
+    void updateLowCutFilter (const double sampleRate, const float lowCutFrequency, const Slope lowCutSlope);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
-};
-
-enum Slope
-{
-    Slope_12,
-    Slope_24,
-    Slope_36,
-    Slope_48,
 };
 
 struct ChainSettings
