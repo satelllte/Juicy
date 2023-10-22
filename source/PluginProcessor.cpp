@@ -211,69 +211,52 @@ void PluginProcessor::updateLowCutFilter (const double sampleRate, const float l
     auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod (lowCutFrequency, sampleRate, 2 * (lowCutSlope + 1));
     auto leftLowCut = &leftChain.get<ChainPositions::LowCutFilter>();
     auto rightLowCut = &rightChain.get<ChainPositions::LowCutFilter>();
+
     leftLowCut->setBypassed<Slope::Slope_12> (true);
     leftLowCut->setBypassed<Slope::Slope_24> (true);
     leftLowCut->setBypassed<Slope::Slope_36> (true);
     leftLowCut->setBypassed<Slope::Slope_48> (true);
+
     rightLowCut->setBypassed<Slope::Slope_12> (true);
     rightLowCut->setBypassed<Slope::Slope_24> (true);
     rightLowCut->setBypassed<Slope::Slope_36> (true);
     rightLowCut->setBypassed<Slope::Slope_48> (true);
 
-    switch (lowCutSlope)
-    {
-        case Slope::Slope_12:
-            *leftLowCut->get<Slope::Slope_12>().coefficients = *lowCutCoefficients[Slope::Slope_12];
-            leftLowCut->setBypassed<Slope::Slope_12> (false);
-            *rightLowCut->get<Slope::Slope_12>().coefficients = *lowCutCoefficients[Slope::Slope_12];
-            rightLowCut->setBypassed<Slope::Slope_12> (false);
-            break;
-        case Slope::Slope_24:
-            *leftLowCut->get<Slope::Slope_12>().coefficients = *lowCutCoefficients[Slope::Slope_12];
-            leftLowCut->setBypassed<Slope::Slope_12> (false);
-            *leftLowCut->get<Slope::Slope_24>().coefficients = *lowCutCoefficients[Slope::Slope_24];
-            leftLowCut->setBypassed<Slope::Slope_24> (false);
-            *rightLowCut->get<Slope::Slope_12>().coefficients = *lowCutCoefficients[Slope::Slope_12];
-            rightLowCut->setBypassed<Slope::Slope_12> (false);
-            *rightLowCut->get<Slope::Slope_24>().coefficients = *lowCutCoefficients[Slope::Slope_24];
-            rightLowCut->setBypassed<Slope::Slope_24> (false);
-            break;
-        case Slope::Slope_36:
-            *leftLowCut->get<Slope::Slope_12>().coefficients = *lowCutCoefficients[Slope::Slope_12];
-            leftLowCut->setBypassed<Slope::Slope_12> (false);
-            *leftLowCut->get<Slope::Slope_24>().coefficients = *lowCutCoefficients[Slope::Slope_24];
-            leftLowCut->setBypassed<Slope::Slope_24> (false);
-            *leftLowCut->get<Slope::Slope_36>().coefficients = *lowCutCoefficients[Slope::Slope_36];
-            leftLowCut->setBypassed<Slope::Slope_36> (false);
-            *rightLowCut->get<Slope::Slope_12>().coefficients = *lowCutCoefficients[Slope::Slope_12];
-            rightLowCut->setBypassed<Slope::Slope_12> (false);
-            *rightLowCut->get<Slope::Slope_24>().coefficients = *lowCutCoefficients[Slope::Slope_24];
-            rightLowCut->setBypassed<Slope::Slope_24> (false);
-            *rightLowCut->get<Slope::Slope_36>().coefficients = *lowCutCoefficients[Slope::Slope_36];
-            rightLowCut->setBypassed<Slope::Slope_36> (false);
-            break;
-        case Slope::Slope_48:
-            *leftLowCut->get<Slope::Slope_12>().coefficients = *lowCutCoefficients[Slope::Slope_12];
-            leftLowCut->setBypassed<Slope::Slope_12> (false);
-            *leftLowCut->get<Slope::Slope_24>().coefficients = *lowCutCoefficients[Slope::Slope_24];
-            leftLowCut->setBypassed<Slope::Slope_24> (false);
-            *leftLowCut->get<Slope::Slope_36>().coefficients = *lowCutCoefficients[Slope::Slope_36];
-            leftLowCut->setBypassed<Slope::Slope_36> (false);
-            *leftLowCut->get<Slope::Slope_48>().coefficients = *lowCutCoefficients[Slope::Slope_48];
-            leftLowCut->setBypassed<Slope::Slope_48> (false);
-            *rightLowCut->get<Slope::Slope_12>().coefficients = *lowCutCoefficients[Slope::Slope_12];
-            rightLowCut->setBypassed<Slope::Slope_12> (false);
-            *rightLowCut->get<Slope::Slope_24>().coefficients = *lowCutCoefficients[Slope::Slope_24];
-            rightLowCut->setBypassed<Slope::Slope_24> (false);
-            *rightLowCut->get<Slope::Slope_36>().coefficients = *lowCutCoefficients[Slope::Slope_36];
-            rightLowCut->setBypassed<Slope::Slope_36> (false);
-            *rightLowCut->get<Slope::Slope_48>().coefficients = *lowCutCoefficients[Slope::Slope_48];
-            rightLowCut->setBypassed<Slope::Slope_48> (false);
-            break;
-        default:
-            jassertfalse;
-            break;
-    }
+    // Gradually enabling filters based on the slope ...
+    // 12 db/Oct
+    *leftLowCut->get<Slope::Slope_12>().coefficients = *lowCutCoefficients[Slope::Slope_12];
+    *rightLowCut->get<Slope::Slope_12>().coefficients = *lowCutCoefficients[Slope::Slope_12];
+    leftLowCut->setBypassed<Slope::Slope_12> (false);
+    rightLowCut->setBypassed<Slope::Slope_12> (false);
+    if (lowCutSlope == Slope::Slope_12)
+        return;
+
+    // 24 db/Oct
+    *leftLowCut->get<Slope::Slope_24>().coefficients = *lowCutCoefficients[Slope::Slope_24];
+    *rightLowCut->get<Slope::Slope_24>().coefficients = *lowCutCoefficients[Slope::Slope_24];
+    leftLowCut->setBypassed<Slope::Slope_24> (false);
+    rightLowCut->setBypassed<Slope::Slope_24> (false);
+    if (lowCutSlope == Slope::Slope_24)
+        return;
+
+    // 36 db/Oct
+    *leftLowCut->get<Slope::Slope_36>().coefficients = *lowCutCoefficients[Slope::Slope_36];
+    *rightLowCut->get<Slope::Slope_36>().coefficients = *lowCutCoefficients[Slope::Slope_36];
+    leftLowCut->setBypassed<Slope::Slope_36> (false);
+    rightLowCut->setBypassed<Slope::Slope_36> (false);
+    if (lowCutSlope == Slope::Slope_36)
+        return;
+
+    // 48 db/Oct
+    *leftLowCut->get<Slope::Slope_48>().coefficients = *lowCutCoefficients[Slope::Slope_48];
+    *rightLowCut->get<Slope::Slope_48>().coefficients = *lowCutCoefficients[Slope::Slope_48];
+    leftLowCut->setBypassed<Slope::Slope_48> (false);
+    rightLowCut->setBypassed<Slope::Slope_48> (false);
+    if (lowCutSlope == Slope::Slope_48)
+        return;
+
+    // Should never reach this point
+    jassertfalse;
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout PluginProcessor::createParameterLayout()
