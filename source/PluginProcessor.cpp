@@ -88,7 +88,21 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
-    juce::ignoreUnused (sampleRate, samplesPerBlock);
+
+    juce::dsp::ProcessSpec processSpec;
+
+    processSpec.maximumBlockSize = static_cast<juce::uint32> (samplesPerBlock);
+    processSpec.sampleRate = sampleRate;
+    processSpec.numChannels = 1;
+
+    leftChain.prepare (processSpec);
+    rightChain.prepare (processSpec);
+
+    auto chainSettings = getChainSettings (apvts);
+
+    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter (sampleRate, chainSettings.peakFrequency, chainSettings.peakQuality, juce::Decibels::decibelsToGain (chainSettings.peakGainInDecibels));
+    *leftChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
+    *rightChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
 }
 
 void PluginProcessor::releaseResources()
@@ -135,20 +149,27 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
-        juce::ignoreUnused (channelData);
-        // ..do something to the data...
+        buffer.clear (i, 0, buffer.getNumSamples());
     }
+
+    /**
+     * TODO: refactor this, so it doesn't repeat the same code from `prepareToPlay` method
+     */
+    // Peak filter
+    auto chainSettings = getChainSettings (apvts);
+    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter (getSampleRate(), chainSettings.peakFrequency, chainSettings.peakQuality, juce::Decibels::decibelsToGain (chainSettings.peakGainInDecibels));
+    *leftChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
+    *rightChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
+
+    // Apply audio processing
+    auto block = juce::dsp::AudioBlock<float> (buffer);
+    auto leftChannelBlock = block.getSingleChannelBlock (0);
+    auto rightChannelBlock = block.getSingleChannelBlock (1);
+    auto leftChannelContext = juce::dsp::ProcessContextReplacing<float> (leftChannelBlock);
+    auto rightChannelContext = juce::dsp::ProcessContextReplacing<float> (rightChannelBlock);
+    leftChain.process (leftChannelContext);
+    rightChain.process (rightChannelContext);
 }
 
 //==============================================================================
@@ -206,4 +227,19 @@ juce::AudioProcessorValueTreeState::ParameterLayout PluginProcessor::createParam
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new PluginProcessor();
+}
+
+ChainSettings getChainSettings (const juce::AudioProcessorValueTreeState& apvts)
+{
+    ChainSettings chainSettings;
+
+    chainSettings.lowCutFrequency = apvts.getRawParameterValue ("Low-Cut Frequency")->load();
+    chainSettings.lowCutSlope = apvts.getRawParameterValue ("Low-Cut Slope")->load();
+    chainSettings.highCutFrequency = apvts.getRawParameterValue ("High-Cut Frequency")->load();
+    chainSettings.highCutSlope = apvts.getRawParameterValue ("High-Cut Slope")->load();
+    chainSettings.peakFrequency = apvts.getRawParameterValue ("Peak Frequency")->load();
+    chainSettings.peakGainInDecibels = apvts.getRawParameterValue ("Peak Gain")->load();
+    chainSettings.peakQuality = apvts.getRawParameterValue ("Peak Quality")->load();
+
+    return chainSettings;
 }
