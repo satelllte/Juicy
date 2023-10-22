@@ -60,7 +60,7 @@ private:
 
     MonoChain leftChain, rightChain;
 
-    enum ChainPositions
+    enum ChainPosition
     {
         LowCutFilter,
         PeakFilter,

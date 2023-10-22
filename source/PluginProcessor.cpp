@@ -203,23 +203,23 @@ void PluginProcessor::updateFilters (const double sampleRate)
 void PluginProcessor::updatePeakFilter (const double sampleRate, const float peakFrequency, const float peakQuality, const float peakGainInDecibels)
 {
     auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter (sampleRate, peakFrequency, peakQuality, juce::Decibels::decibelsToGain (peakGainInDecibels));
-    *leftChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
-    *rightChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
+    *leftChain.get<ChainPosition::PeakFilter>().coefficients = *peakCoefficients;
+    *rightChain.get<ChainPosition::PeakFilter>().coefficients = *peakCoefficients;
 }
 
 void PluginProcessor::updateLowCutFilter (const double sampleRate, const float frequency, const Slope slope)
 {
     auto coefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod (frequency, sampleRate, 2 * (slope + 1));
-    auto leftCutFilter = &leftChain.get<ChainPositions::LowCutFilter>();
-    auto rightCutFilter = &rightChain.get<ChainPositions::LowCutFilter>();
+    auto leftCutFilter = &leftChain.get<ChainPosition::LowCutFilter>();
+    auto rightCutFilter = &rightChain.get<ChainPosition::LowCutFilter>();
     updateCutFilter (coefficients, leftCutFilter, rightCutFilter, slope);
 }
 
 void PluginProcessor::updateHighCutFilter (const double sampleRate, const float frequency, const Slope slope)
 {
     auto coefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod (frequency, sampleRate, 2 * (slope + 1));
-    auto leftCutFilter = &leftChain.get<ChainPositions::HighCutFilter>();
-    auto rightCutFilter = &rightChain.get<ChainPositions::HighCutFilter>();
+    auto leftCutFilter = &leftChain.get<ChainPosition::HighCutFilter>();
+    auto rightCutFilter = &rightChain.get<ChainPosition::HighCutFilter>();
     updateCutFilter (coefficients, leftCutFilter, rightCutFilter, slope);
 }
 
