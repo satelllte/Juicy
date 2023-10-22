@@ -206,13 +206,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout PluginProcessor::createParam
     auto frequencyNormalisableRange = juce::NormalisableRange<float> (20.0f, 20000.0f, 0.1f);
     frequencyNormalisableRange.setSkewForCentre (1000.0f);
 
+    const auto slopeChoices = juce::StringArray { "12 db/Oct", "24 db/Oct", "36 db/Oct", "48 db/Oct" };
+
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
     layout.add (std::make_unique<juce::AudioParameterFloat> ("Low-Cut Frequency", "Low-Cut Frequency", frequencyNormalisableRange, 20.0f));
-    layout.add (std::make_unique<juce::AudioParameterChoice> ("Low-Cut Slope", "Low-Cut Slope", juce::StringArray { "12 db/Oct", "24 db/Oct", "36 db/Oct", "48 db/Oct" }, 0));
+    layout.add (std::make_unique<juce::AudioParameterChoice> ("Low-Cut Slope", "Low-Cut Slope", slopeChoices, 0));
 
     layout.add (std::make_unique<juce::AudioParameterFloat> ("High-Cut Frequency", "High-Cut Frequency", frequencyNormalisableRange, 20000.0f));
-    layout.add (std::make_unique<juce::AudioParameterChoice> ("High-Cut Slope", "High-Cut Slope", juce::StringArray { "12 db/Oct", "24 db/Oct", "36 db/Oct", "48 db/Oct" }, 0));
+    layout.add (std::make_unique<juce::AudioParameterChoice> ("High-Cut Slope", "High-Cut Slope", slopeChoices, 0));
 
     layout.add (std::make_unique<juce::AudioParameterFloat> ("Peak Frequency", "Peak Frequency", frequencyNormalisableRange, 750.0f));
     layout.add (std::make_unique<juce::AudioParameterFloat> ("Peak Gain", "Peak Gain", juce::NormalisableRange<float> (-24.0f, 24.0f, 0.5f, 1.0f), 0.0f));
