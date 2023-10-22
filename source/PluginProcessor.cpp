@@ -98,11 +98,7 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     leftChain.prepare (processSpec);
     rightChain.prepare (processSpec);
 
-    auto chainSettings = getChainSettings (apvts);
-
-    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter (sampleRate, chainSettings.peakFrequency, chainSettings.peakQuality, juce::Decibels::decibelsToGain (chainSettings.peakGainInDecibels));
-    *leftChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
-    *rightChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
+    updateFilters (sampleRate);
 }
 
 void PluginProcessor::releaseResources()
@@ -153,14 +149,8 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         buffer.clear (i, 0, buffer.getNumSamples());
     }
 
-    /**
-     * TODO: refactor this, so it doesn't repeat the same code from `prepareToPlay` method
-     */
-    // Peak filter
-    auto chainSettings = getChainSettings (apvts);
-    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter (getSampleRate(), chainSettings.peakFrequency, chainSettings.peakQuality, juce::Decibels::decibelsToGain (chainSettings.peakGainInDecibels));
-    *leftChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
-    *rightChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
+    // Update filters before processing
+    updateFilters (getSampleRate());
 
     // Apply audio processing
     auto block = juce::dsp::AudioBlock<float> (buffer);
@@ -200,6 +190,15 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
     juce::ignoreUnused (data, sizeInBytes);
+}
+
+void PluginProcessor::updateFilters (const double sampleRate)
+{
+    auto chainSettings = getChainSettings (apvts);
+
+    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter (sampleRate, chainSettings.peakFrequency, chainSettings.peakQuality, juce::Decibels::decibelsToGain (chainSettings.peakGainInDecibels));
+    *leftChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
+    *rightChain.get<ChainPositions::PeakFilter>().coefficients = *peakCoefficients;
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout PluginProcessor::createParameterLayout()
