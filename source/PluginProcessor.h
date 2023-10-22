@@ -64,12 +64,20 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };
 
+enum Slope
+{
+    Slope_12,
+    Slope_24,
+    Slope_36,
+    Slope_48,
+};
+
 struct ChainSettings
 {
     float lowCutFrequency { 0.0f };
-    float lowCutSlope { 0.0f };
+    Slope lowCutSlope { Slope::Slope_12 };
     float highCutFrequency { 0.0f };
-    float highCutSlope { 0.0f };
+    Slope highCutSlope { Slope::Slope_12 };
     float peakFrequency { 0.0f };
     float peakGainInDecibels { 0.0f };
     float peakQuality { 0.0f };

@@ -233,9 +233,9 @@ ChainSettings getChainSettings (const juce::AudioProcessorValueTreeState& apvts)
     ChainSettings chainSettings;
 
     chainSettings.lowCutFrequency = apvts.getRawParameterValue ("Low-Cut Frequency")->load();
-    chainSettings.lowCutSlope = apvts.getRawParameterValue ("Low-Cut Slope")->load();
+    chainSettings.lowCutSlope = static_cast<Slope> (apvts.getRawParameterValue ("Low-Cut Slope")->load());
     chainSettings.highCutFrequency = apvts.getRawParameterValue ("High-Cut Frequency")->load();
-    chainSettings.highCutSlope = apvts.getRawParameterValue ("High-Cut Slope")->load();
+    chainSettings.highCutSlope = static_cast<Slope> (apvts.getRawParameterValue ("High-Cut Slope")->load());
     chainSettings.peakFrequency = apvts.getRawParameterValue ("Peak Frequency")->load();
     chainSettings.peakGainInDecibels = apvts.getRawParameterValue ("Peak Gain")->load();
     chainSettings.peakQuality = apvts.getRawParameterValue ("Peak Quality")->load();
