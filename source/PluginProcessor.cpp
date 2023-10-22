@@ -197,6 +197,7 @@ void PluginProcessor::updateFilters (const double sampleRate)
     auto chainSettings = getChainSettings (apvts);
     updatePeakFilter (sampleRate, chainSettings.peakFrequency, chainSettings.peakQuality, chainSettings.peakGainInDecibels);
     updateLowCutFilter (sampleRate, chainSettings.lowCutFrequency, chainSettings.lowCutSlope);
+    updateHighCutFilter (sampleRate, chainSettings.highCutFrequency, chainSettings.highCutSlope);
 }
 
 void PluginProcessor::updatePeakFilter (const double sampleRate, const float peakFrequency, const float peakQuality, const float peakGainInDecibels)
@@ -211,6 +212,59 @@ void PluginProcessor::updateLowCutFilter (const double sampleRate, const float f
     auto coefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod (frequency, sampleRate, 2 * (slope + 1));
     auto leftCutFilter = &leftChain.get<ChainPositions::LowCutFilter>();
     auto rightCutFilter = &rightChain.get<ChainPositions::LowCutFilter>();
+
+    leftCutFilter->setBypassed<Slope::Slope_12> (true);
+    leftCutFilter->setBypassed<Slope::Slope_24> (true);
+    leftCutFilter->setBypassed<Slope::Slope_36> (true);
+    leftCutFilter->setBypassed<Slope::Slope_48> (true);
+
+    rightCutFilter->setBypassed<Slope::Slope_12> (true);
+    rightCutFilter->setBypassed<Slope::Slope_24> (true);
+    rightCutFilter->setBypassed<Slope::Slope_36> (true);
+    rightCutFilter->setBypassed<Slope::Slope_48> (true);
+
+    // Gradually enabling filters based on the slope ...
+    // 12 db/Oct
+    *leftCutFilter->get<Slope::Slope_12>().coefficients = *coefficients[Slope::Slope_12];
+    *rightCutFilter->get<Slope::Slope_12>().coefficients = *coefficients[Slope::Slope_12];
+    leftCutFilter->setBypassed<Slope::Slope_12> (false);
+    rightCutFilter->setBypassed<Slope::Slope_12> (false);
+    if (slope == Slope::Slope_12)
+        return;
+
+    // 24 db/Oct
+    *leftCutFilter->get<Slope::Slope_24>().coefficients = *coefficients[Slope::Slope_24];
+    *rightCutFilter->get<Slope::Slope_24>().coefficients = *coefficients[Slope::Slope_24];
+    leftCutFilter->setBypassed<Slope::Slope_24> (false);
+    rightCutFilter->setBypassed<Slope::Slope_24> (false);
+    if (slope == Slope::Slope_24)
+        return;
+
+    // 36 db/Oct
+    *leftCutFilter->get<Slope::Slope_36>().coefficients = *coefficients[Slope::Slope_36];
+    *rightCutFilter->get<Slope::Slope_36>().coefficients = *coefficients[Slope::Slope_36];
+    leftCutFilter->setBypassed<Slope::Slope_36> (false);
+    rightCutFilter->setBypassed<Slope::Slope_36> (false);
+    if (slope == Slope::Slope_36)
+        return;
+
+    // 48 db/Oct
+    *leftCutFilter->get<Slope::Slope_48>().coefficients = *coefficients[Slope::Slope_48];
+    *rightCutFilter->get<Slope::Slope_48>().coefficients = *coefficients[Slope::Slope_48];
+    leftCutFilter->setBypassed<Slope::Slope_48> (false);
+    rightCutFilter->setBypassed<Slope::Slope_48> (false);
+    if (slope == Slope::Slope_48)
+        return;
+
+    // Should never reach this point
+    jassertfalse;
+}
+
+void PluginProcessor::updateHighCutFilter (const double sampleRate, const float frequency, const Slope slope)
+{
+    auto coefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod (frequency, sampleRate, 2 * (slope + 1));
+    auto leftCutFilter = &leftChain.get<ChainPositions::HighCutFilter>();
+    auto rightCutFilter = &rightChain.get<ChainPositions::HighCutFilter>();
 
     leftCutFilter->setBypassed<Slope::Slope_12> (true);
     leftCutFilter->setBypassed<Slope::Slope_24> (true);
