@@ -224,7 +224,7 @@ void PluginProcessor::updateHighCutFilter (const double sampleRate, const float 
 }
 
 void PluginProcessor::updateCutFilter (
-    const juce::ReferenceCountedArray<juce::dsp::FilterDesign<float>::IIRCoefficients> coefficients,
+    const juce::ReferenceCountedArray<juce::dsp::FilterDesign<float>::IIRCoefficients>& coefficients,
     CutFilter* leftCutFilter,
     CutFilter* rightCutFilter,
     const Slope slope)
