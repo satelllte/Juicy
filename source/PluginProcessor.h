@@ -67,7 +67,6 @@ private:
     using Filter = juce::dsp::IIR::Filter<float>;
     using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
     using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
-    using FilterCoefficients = Filter::CoefficientsPtr;
 
     MonoChain leftChain, rightChain;
 
@@ -87,7 +86,7 @@ private:
         CutFilter* leftCutFilter,
         CutFilter* rightCutFilter,
         const Slope slope);
-    void updateFilterCoefficients (FilterCoefficients& coefficientsToUpdate, const FilterCoefficients& coefficients);
+    void updateFilterCoefficients (Filter::CoefficientsPtr& coefficientsToUpdate, const Filter::CoefficientsPtr& coefficients);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };

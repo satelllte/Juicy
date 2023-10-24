@@ -276,7 +276,7 @@ void PluginProcessor::updateCutFilter (
     jassertfalse;
 }
 
-void PluginProcessor::updateFilterCoefficients (FilterCoefficients& coefficientsToUpdate, const FilterCoefficients& coefficients)
+void PluginProcessor::updateFilterCoefficients (Filter::CoefficientsPtr& coefficientsToUpdate, const Filter::CoefficientsPtr& coefficients)
 {
     *coefficientsToUpdate = *coefficients;
 }
