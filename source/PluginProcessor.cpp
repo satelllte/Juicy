@@ -177,19 +177,25 @@ juce::AudioProcessorEditor* PluginProcessor::createEditor()
 }
 
 //==============================================================================
-void PluginProcessor::getStateInformation (juce::MemoryBlock& destData)
+void PluginProcessor::getStateInformation (juce::MemoryBlock& stateDestinationData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
-    juce::ignoreUnused (destData);
+    auto memoryOutputStream = juce::MemoryOutputStream (stateDestinationData, true);
+    apvts.state.writeToStream (memoryOutputStream);
 }
 
-void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
+void PluginProcessor::setStateInformation (const void* stateData, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
-    juce::ignoreUnused (data, sizeInBytes);
+    const auto state = juce::ValueTree::readFromData (stateData, static_cast<size_t> (sizeInBytes));
+    if (state.isValid())
+    {
+        apvts.replaceState (state);
+        updateFilters (getSampleRate());
+    }
 }
 
 void PluginProcessor::updateFilters (const double sampleRate)
