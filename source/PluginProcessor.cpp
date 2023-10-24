@@ -203,8 +203,8 @@ void PluginProcessor::updateFilters (const double sampleRate)
 void PluginProcessor::updatePeakFilter (const double sampleRate, const float peakFrequency, const float peakQuality, const float peakGainInDecibels)
 {
     auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter (sampleRate, peakFrequency, peakQuality, juce::Decibels::decibelsToGain (peakGainInDecibels));
-    *leftChain.get<ChainPosition::PeakFilter>().coefficients = *peakCoefficients;
-    *rightChain.get<ChainPosition::PeakFilter>().coefficients = *peakCoefficients;
+    updateFilterCoefficients (leftChain.get<ChainPosition::PeakFilter>().coefficients, peakCoefficients);
+    updateFilterCoefficients (rightChain.get<ChainPosition::PeakFilter>().coefficients, peakCoefficients);
 }
 
 void PluginProcessor::updateLowCutFilter (const double sampleRate, const float frequency, const Slope slope)
@@ -241,32 +241,32 @@ void PluginProcessor::updateCutFilter (
 
     // Gradually enabling filters based on the slope ...
     // 12 db/Oct
-    *leftCutFilter->get<Slope::Slope_12>().coefficients = *coefficients[Slope::Slope_12];
-    *rightCutFilter->get<Slope::Slope_12>().coefficients = *coefficients[Slope::Slope_12];
+    updateFilterCoefficients (leftCutFilter->get<Slope::Slope_12>().coefficients, coefficients[Slope::Slope_12]);
+    updateFilterCoefficients (rightCutFilter->get<Slope::Slope_12>().coefficients, coefficients[Slope::Slope_12]);
     leftCutFilter->setBypassed<Slope::Slope_12> (false);
     rightCutFilter->setBypassed<Slope::Slope_12> (false);
     if (slope == Slope::Slope_12)
         return;
 
     // 24 db/Oct
-    *leftCutFilter->get<Slope::Slope_24>().coefficients = *coefficients[Slope::Slope_24];
-    *rightCutFilter->get<Slope::Slope_24>().coefficients = *coefficients[Slope::Slope_24];
+    updateFilterCoefficients (leftCutFilter->get<Slope::Slope_24>().coefficients, coefficients[Slope::Slope_24]);
+    updateFilterCoefficients (rightCutFilter->get<Slope::Slope_24>().coefficients, coefficients[Slope::Slope_24]);
     leftCutFilter->setBypassed<Slope::Slope_24> (false);
     rightCutFilter->setBypassed<Slope::Slope_24> (false);
     if (slope == Slope::Slope_24)
         return;
 
     // 36 db/Oct
-    *leftCutFilter->get<Slope::Slope_36>().coefficients = *coefficients[Slope::Slope_36];
-    *rightCutFilter->get<Slope::Slope_36>().coefficients = *coefficients[Slope::Slope_36];
+    updateFilterCoefficients (leftCutFilter->get<Slope::Slope_36>().coefficients, coefficients[Slope::Slope_36]);
+    updateFilterCoefficients (rightCutFilter->get<Slope::Slope_36>().coefficients, coefficients[Slope::Slope_36]);
     leftCutFilter->setBypassed<Slope::Slope_36> (false);
     rightCutFilter->setBypassed<Slope::Slope_36> (false);
     if (slope == Slope::Slope_36)
         return;
 
     // 48 db/Oct
-    *leftCutFilter->get<Slope::Slope_48>().coefficients = *coefficients[Slope::Slope_48];
-    *rightCutFilter->get<Slope::Slope_48>().coefficients = *coefficients[Slope::Slope_48];
+    updateFilterCoefficients (leftCutFilter->get<Slope::Slope_48>().coefficients, coefficients[Slope::Slope_48]);
+    updateFilterCoefficients (rightCutFilter->get<Slope::Slope_48>().coefficients, coefficients[Slope::Slope_48]);
     leftCutFilter->setBypassed<Slope::Slope_48> (false);
     rightCutFilter->setBypassed<Slope::Slope_48> (false);
     if (slope == Slope::Slope_48)
@@ -274,6 +274,11 @@ void PluginProcessor::updateCutFilter (
 
     // Should never reach this point
     jassertfalse;
+}
+
+void PluginProcessor::updateFilterCoefficients (FilterCoefficients& coefficientsToUpdate, const FilterCoefficients& coefficients)
+{
+    *coefficientsToUpdate = *coefficients;
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout PluginProcessor::createParameterLayout()
