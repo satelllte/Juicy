@@ -15,7 +15,17 @@ enum Slope
     Slope_48,
 };
 
-struct ChainSettings; // forward declaration
+struct ChainSettings
+{
+    float lowCutFrequency { 0.0f };
+    Slope lowCutSlope { Slope::Slope_12 };
+    float highCutFrequency { 0.0f };
+    Slope highCutSlope { Slope::Slope_12 };
+    float peakFrequency { 0.0f };
+    float peakGainInDecibels { 0.0f };
+    float peakQuality { 0.0f };
+};
+
 ChainSettings getChainSettings (const juce::AudioProcessorValueTreeState& apvts);
 
 class PluginProcessor : public juce::AudioProcessor
@@ -80,15 +90,4 @@ private:
     void updateFilterCoefficients (FilterCoefficients& coefficientsToUpdate, const FilterCoefficients& coefficients);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
-};
-
-struct ChainSettings
-{
-    float lowCutFrequency { 0.0f };
-    Slope lowCutSlope { Slope::Slope_12 };
-    float highCutFrequency { 0.0f };
-    Slope highCutSlope { Slope::Slope_12 };
-    float peakFrequency { 0.0f };
-    float peakGainInDecibels { 0.0f };
-    float peakQuality { 0.0f };
 };
