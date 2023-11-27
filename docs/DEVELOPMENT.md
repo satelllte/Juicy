@@ -111,3 +111,9 @@ To check source code formatting with ClangFormat, run:
 ```sh
 ./scripts/test_format.sh
 ```
+
+To update the files with ClangFormat, so they'll be formated, run:
+
+```sh
+./scripts/format.sh
+```
