@@ -20,7 +20,7 @@ set(FORMATS AU VST3 AUv3)
 
 # This must be set before the project() call
 # see: https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_DEPLOYMENT_TARGET.html
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Support MacOS down to High Sierra")
+set(CMAKE_OSX_DEPLOYMENT_TARGET "13" CACHE STRING "Support MacOS down to Ventura")
 
 # Reads VERSION file and puts its value into CURRENT_VERSION variable.
 # Be sure the file has no newlines!
