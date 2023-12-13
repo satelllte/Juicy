@@ -125,8 +125,10 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ignoreUnused (midiMessages);
 
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
+    int totalNumInputChannels = getTotalNumInputChannels();
+    int totalNumOutputChannels = getTotalNumOutputChannels();
+    int bufferNumSamples = buffer.getNumSamples();
+    float* const* bufferPointers = buffer.getArrayOfWritePointers();
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -134,8 +136,10 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // This is here to avoid people getting screaming feedback
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+    for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+    {
+        buffer.clear (i, 0, bufferNumSamples);
+    }
 
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
@@ -145,9 +149,10 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // interleaved by keeping the same state.
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
-        juce::ignoreUnused (channelData);
-        // ..do something to the data...
+        for (int sample = 0; sample < bufferNumSamples; ++sample)
+        {
+            bufferPointers[channel][sample] *= _gain;
+        }
     }
 }
 
@@ -183,4 +188,9 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new PluginProcessor();
+}
+
+void PluginProcessor::setGain (const float value)
+{
+    _gain = value;
 }
