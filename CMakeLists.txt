@@ -20,7 +20,7 @@ set(FORMATS AU VST3 AUv3)
 
 # This must be set before the project() call
 # see: https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_DEPLOYMENT_TARGET.html
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Support MacOS down to High Sierra")
+set(CMAKE_OSX_DEPLOYMENT_TARGET "13" CACHE STRING "Support MacOS down to Ventura")
 
 # Reads VERSION file and puts its value into CURRENT_VERSION variable.
 # Be sure the file has no newlines!
@@ -114,12 +114,17 @@ target_compile_definitions("${PROJECT_NAME}"
     # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
     JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_plugin` call
     JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_plugin` call
-    JUCE_VST3_CAN_REPLACE_VST2=0)
+    JUCE_VST3_CAN_REPLACE_VST2=0
+    # This is a temporary workaround to allow builds to complete on Xcode 15.
+    # Add -Wl,-ld_classic to the OTHER_LDFLAGS build setting if you need to
+    # deploy to older versions of macOS/iOS.
+    JUCE_SILENCE_XCODE_15_LINKER_WARNING=1)
 
 target_link_libraries("${PROJECT_NAME}"
     PRIVATE
     juce::juce_audio_utils
     juce::juce_audio_processors
+    juce::juce_dsp
     PUBLIC
     juce::juce_recommended_config_flags
     juce::juce_recommended_lto_flags

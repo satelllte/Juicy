@@ -88,7 +88,17 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
-    juce::ignoreUnused (sampleRate, samplesPerBlock);
+
+    juce::dsp::ProcessSpec processSpec;
+
+    processSpec.maximumBlockSize = static_cast<juce::uint32> (samplesPerBlock);
+    processSpec.sampleRate = sampleRate;
+    processSpec.numChannels = 1;
+
+    leftChain.prepare (processSpec);
+    rightChain.prepare (processSpec);
+
+    updateFilters (sampleRate);
 }
 
 void PluginProcessor::releaseResources()
@@ -135,20 +145,21 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
-        juce::ignoreUnused (channelData);
-        // ..do something to the data...
+        buffer.clear (i, 0, buffer.getNumSamples());
     }
+
+    // Update filters before processing
+    updateFilters (getSampleRate());
+
+    // Apply audio processing
+    auto block = juce::dsp::AudioBlock<float> (buffer);
+    auto leftChannelBlock = block.getSingleChannelBlock (0);
+    auto rightChannelBlock = block.getSingleChannelBlock (1);
+    auto leftChannelContext = juce::dsp::ProcessContextReplacing<float> (leftChannelBlock);
+    auto rightChannelContext = juce::dsp::ProcessContextReplacing<float> (rightChannelBlock);
+    leftChain.process (leftChannelContext);
+    rightChain.process (rightChannelContext);
 }
 
 //==============================================================================
@@ -159,23 +170,143 @@ bool PluginProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* PluginProcessor::createEditor()
 {
-    return new PluginEditor (*this);
+    /**
+     * TODO: Once UI is implemented in `PluginEditor.h`, use it instead
+     */
+    return new juce::GenericAudioProcessorEditor (*this);
 }
 
 //==============================================================================
-void PluginProcessor::getStateInformation (juce::MemoryBlock& destData)
+void PluginProcessor::getStateInformation (juce::MemoryBlock& stateDestinationData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
-    juce::ignoreUnused (destData);
+    auto memoryOutputStream = juce::MemoryOutputStream (stateDestinationData, true);
+    apvts.state.writeToStream (memoryOutputStream);
 }
 
-void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
+void PluginProcessor::setStateInformation (const void* stateData, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
-    juce::ignoreUnused (data, sizeInBytes);
+    const auto state = juce::ValueTree::readFromData (stateData, static_cast<size_t> (sizeInBytes));
+    if (state.isValid())
+    {
+        apvts.replaceState (state);
+        updateFilters (getSampleRate());
+    }
+}
+
+void PluginProcessor::updateFilters (const double sampleRate)
+{
+    auto chainSettings = getChainSettings (apvts);
+    updatePeakFilter (sampleRate, chainSettings.peakFrequency, chainSettings.peakQuality, chainSettings.peakGainInDecibels);
+    updateLowCutFilter (sampleRate, chainSettings.lowCutFrequency, chainSettings.lowCutSlope);
+    updateHighCutFilter (sampleRate, chainSettings.highCutFrequency, chainSettings.highCutSlope);
+}
+
+void PluginProcessor::updatePeakFilter (const double sampleRate, const float peakFrequency, const float peakQuality, const float peakGainInDecibels)
+{
+    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter (sampleRate, peakFrequency, peakQuality, juce::Decibels::decibelsToGain (peakGainInDecibels));
+    updateFilterCoefficients (leftChain.get<ChainPosition::PeakFilter>().coefficients, peakCoefficients);
+    updateFilterCoefficients (rightChain.get<ChainPosition::PeakFilter>().coefficients, peakCoefficients);
+}
+
+void PluginProcessor::updateLowCutFilter (const double sampleRate, const float frequency, const Slope slope)
+{
+    auto coefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod (frequency, sampleRate, 2 * (slope + 1));
+    auto leftCutFilter = &leftChain.get<ChainPosition::LowCutFilter>();
+    auto rightCutFilter = &rightChain.get<ChainPosition::LowCutFilter>();
+    updateCutFilter (coefficients, leftCutFilter, rightCutFilter, slope);
+}
+
+void PluginProcessor::updateHighCutFilter (const double sampleRate, const float frequency, const Slope slope)
+{
+    auto coefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod (frequency, sampleRate, 2 * (slope + 1));
+    auto leftCutFilter = &leftChain.get<ChainPosition::HighCutFilter>();
+    auto rightCutFilter = &rightChain.get<ChainPosition::HighCutFilter>();
+    updateCutFilter (coefficients, leftCutFilter, rightCutFilter, slope);
+}
+
+void PluginProcessor::updateCutFilter (
+    const juce::ReferenceCountedArray<juce::dsp::FilterDesign<float>::IIRCoefficients>& coefficients,
+    CutFilter* leftCutFilter,
+    CutFilter* rightCutFilter,
+    const Slope slope)
+{
+    leftCutFilter->setBypassed<Slope::Slope_12> (true);
+    leftCutFilter->setBypassed<Slope::Slope_24> (true);
+    leftCutFilter->setBypassed<Slope::Slope_36> (true);
+    leftCutFilter->setBypassed<Slope::Slope_48> (true);
+
+    rightCutFilter->setBypassed<Slope::Slope_12> (true);
+    rightCutFilter->setBypassed<Slope::Slope_24> (true);
+    rightCutFilter->setBypassed<Slope::Slope_36> (true);
+    rightCutFilter->setBypassed<Slope::Slope_48> (true);
+
+    // Gradually enabling filters based on the slope ...
+    // 12 db/Oct
+    updateFilterCoefficients (leftCutFilter->get<Slope::Slope_12>().coefficients, coefficients[Slope::Slope_12]);
+    updateFilterCoefficients (rightCutFilter->get<Slope::Slope_12>().coefficients, coefficients[Slope::Slope_12]);
+    leftCutFilter->setBypassed<Slope::Slope_12> (false);
+    rightCutFilter->setBypassed<Slope::Slope_12> (false);
+    if (slope == Slope::Slope_12)
+        return;
+
+    // 24 db/Oct
+    updateFilterCoefficients (leftCutFilter->get<Slope::Slope_24>().coefficients, coefficients[Slope::Slope_24]);
+    updateFilterCoefficients (rightCutFilter->get<Slope::Slope_24>().coefficients, coefficients[Slope::Slope_24]);
+    leftCutFilter->setBypassed<Slope::Slope_24> (false);
+    rightCutFilter->setBypassed<Slope::Slope_24> (false);
+    if (slope == Slope::Slope_24)
+        return;
+
+    // 36 db/Oct
+    updateFilterCoefficients (leftCutFilter->get<Slope::Slope_36>().coefficients, coefficients[Slope::Slope_36]);
+    updateFilterCoefficients (rightCutFilter->get<Slope::Slope_36>().coefficients, coefficients[Slope::Slope_36]);
+    leftCutFilter->setBypassed<Slope::Slope_36> (false);
+    rightCutFilter->setBypassed<Slope::Slope_36> (false);
+    if (slope == Slope::Slope_36)
+        return;
+
+    // 48 db/Oct
+    updateFilterCoefficients (leftCutFilter->get<Slope::Slope_48>().coefficients, coefficients[Slope::Slope_48]);
+    updateFilterCoefficients (rightCutFilter->get<Slope::Slope_48>().coefficients, coefficients[Slope::Slope_48]);
+    leftCutFilter->setBypassed<Slope::Slope_48> (false);
+    rightCutFilter->setBypassed<Slope::Slope_48> (false);
+    if (slope == Slope::Slope_48)
+        return;
+
+    // Should never reach this point
+    jassertfalse;
+}
+
+void PluginProcessor::updateFilterCoefficients (Filter::CoefficientsPtr& coefficientsToUpdate, const Filter::CoefficientsPtr& coefficients)
+{
+    *coefficientsToUpdate = *coefficients;
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout PluginProcessor::createParameterLayout()
+{
+    auto frequencyNormalisableRange = juce::NormalisableRange<float> (20.0f, 20000.0f, 0.1f);
+    frequencyNormalisableRange.setSkewForCentre (1000.0f);
+
+    const auto slopeChoices = juce::StringArray { "12 db/Oct", "24 db/Oct", "36 db/Oct", "48 db/Oct" };
+
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    layout.add (std::make_unique<juce::AudioParameterFloat> ("Low-Cut Frequency", "Low-Cut Frequency", frequencyNormalisableRange, 20.0f));
+    layout.add (std::make_unique<juce::AudioParameterChoice> ("Low-Cut Slope", "Low-Cut Slope", slopeChoices, 0));
+
+    layout.add (std::make_unique<juce::AudioParameterFloat> ("High-Cut Frequency", "High-Cut Frequency", frequencyNormalisableRange, 20000.0f));
+    layout.add (std::make_unique<juce::AudioParameterChoice> ("High-Cut Slope", "High-Cut Slope", slopeChoices, 0));
+
+    layout.add (std::make_unique<juce::AudioParameterFloat> ("Peak Frequency", "Peak Frequency", frequencyNormalisableRange, 750.0f));
+    layout.add (std::make_unique<juce::AudioParameterFloat> ("Peak Gain", "Peak Gain", juce::NormalisableRange<float> (-24.0f, 24.0f, 0.5f, 1.0f), 0.0f));
+    layout.add (std::make_unique<juce::AudioParameterFloat> ("Peak Quality", "Peak Quality", juce::NormalisableRange<float> (0.1f, 10.0f, 0.05f, 1.0f), 1.0f));
+
+    return layout;
 }
 
 //==============================================================================
@@ -183,4 +314,19 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new PluginProcessor();
+}
+
+ChainSettings getChainSettings (const juce::AudioProcessorValueTreeState& apvts)
+{
+    ChainSettings chainSettings;
+
+    chainSettings.lowCutFrequency = apvts.getRawParameterValue ("Low-Cut Frequency")->load();
+    chainSettings.lowCutSlope = static_cast<Slope> (apvts.getRawParameterValue ("Low-Cut Slope")->load());
+    chainSettings.highCutFrequency = apvts.getRawParameterValue ("High-Cut Frequency")->load();
+    chainSettings.highCutSlope = static_cast<Slope> (apvts.getRawParameterValue ("High-Cut Slope")->load());
+    chainSettings.peakFrequency = apvts.getRawParameterValue ("Peak Frequency")->load();
+    chainSettings.peakGainInDecibels = apvts.getRawParameterValue ("Peak Gain")->load();
+    chainSettings.peakQuality = apvts.getRawParameterValue ("Peak Quality")->load();
+
+    return chainSettings;
 }

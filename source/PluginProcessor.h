@@ -1,10 +1,32 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_dsp/juce_dsp.h>
 
 #if (MSVC)
 #include "ipps.h"
 #endif
+
+enum Slope
+{
+    Slope_12,
+    Slope_24,
+    Slope_36,
+    Slope_48,
+};
+
+struct ChainSettings
+{
+    float lowCutFrequency { 0.0f };
+    Slope lowCutSlope { Slope::Slope_12 };
+    float highCutFrequency { 0.0f };
+    Slope highCutSlope { Slope::Slope_12 };
+    float peakFrequency { 0.0f };
+    float peakGainInDecibels { 0.0f };
+    float peakQuality { 0.0f };
+};
+
+ChainSettings getChainSettings (const juce::AudioProcessorValueTreeState& apvts);
 
 class PluginProcessor : public juce::AudioProcessor
 {
@@ -38,6 +60,33 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameterLayout() };
+
 private:
+    using Filter = juce::dsp::IIR::Filter<float>;
+    using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
+    using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
+
+    MonoChain leftChain, rightChain;
+
+    enum ChainPosition
+    {
+        LowCutFilter,
+        PeakFilter,
+        HighCutFilter
+    };
+
+    void updateFilters (const double sampleRate);
+    void updatePeakFilter (const double sampleRate, const float peakFrequency, const float peakQuality, const float peakGainInDecibels);
+    void updateLowCutFilter (const double sampleRate, const float frequency, const Slope slope);
+    void updateHighCutFilter (const double sampleRate, const float frequency, const Slope slope);
+    void updateCutFilter (
+        const juce::ReferenceCountedArray<juce::dsp::FilterDesign<float>::IIRCoefficients>& coefficients,
+        CutFilter* leftCutFilter,
+        CutFilter* rightCutFilter,
+        const Slope slope);
+    void updateFilterCoefficients (Filter::CoefficientsPtr& coefficientsToUpdate, const Filter::CoefficientsPtr& coefficients);
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };
