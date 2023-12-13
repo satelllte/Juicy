@@ -18,7 +18,7 @@ To update JUCE source files to latest version, run:
 
 ```sh
 pushd ./JUCE
-git pull
+git pull origin master
 popd
 ```
 
